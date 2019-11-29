@@ -31,11 +31,14 @@ public class ControllerAOP {
 	public Object handlerControllerMethods(ProceedingJoinPoint pjp) throws Throwable{
 		long startTime = System.currentTimeMillis();
 		log.info(pjp.getSignature()+"请求参数:{}",pjp.getArgs());
-		IResult result;//业务返回结果
+		//业务返回结果
+		IResult result;
 
-		CheckUtil.checkModel(pjp);//校验model上面的参数
+		//校验model上面的参数
+		CheckUtil.checkModel(pjp);
 
-		result = (IResult) pjp.proceed();//业务处理
+		//业务处理
+		result = (IResult) pjp.proceed();
 
 		log.info("返回结果:{}",result);
 		log.info(pjp.getSignature() + "处理耗费时间:" + (System.currentTimeMillis() - startTime)+"ms");
