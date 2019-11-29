@@ -30,37 +30,39 @@ import static com.gameloft9.demo.mgrframework.utils.CheckUtil.notBlank;
  */
 @Service
 @Slf4j
-public class RequestMappingService implements IRequestMappingService{
+public class RequestMappingService implements IRequestMappingService {
 
     @Autowired
     WebApplicationContext webApplicationContext;
 
-    public ApiBean getApiInfoByIndex(String index){
-        notBlank(index,"index cant not be null");
+    public ApiBean getApiInfoByIndex(String index) {
+        notBlank(index, "index cant not be null");
 
-        if(Constants.requestMappings.containsKey(index)){
+        if (Constants.requestMappings.containsKey(index)) {
             return Constants.requestMappings.get(index);
         }
 
         return null;
     }
 
-    public boolean hasMethodOccupied(String index){
-        notBlank(index,"index cant not be null");
+    @Override
+    public boolean hasMethodOccupied(String index) {
+        notBlank(index, "index cant not be null");
 
         return Constants.requestMappings.containsKey(index);
     }
 
-    public boolean hasApiRegistered(String api,String requestMethod){
-        notBlank(api,"api cant not be null");
-        notBlank(requestMethod,"requestMethod cant not be null");
+    @Override
+    public boolean hasApiRegistered(String api, String requestMethod) {
+        notBlank(api, "api cant not be null");
+        notBlank(requestMethod, "requestMethod cant not be null");
 
         RequestMappingHandlerMapping requestMappingHandlerMapping = webApplicationContext.getBean(RequestMappingHandlerMapping.class);
         Map<RequestMappingInfo, HandlerMethod> map = requestMappingHandlerMapping.getHandlerMethods();
         for (RequestMappingInfo info : map.keySet()) {
-            for(String pattern :info.getPatternsCondition().getPatterns()){
-                if(pattern.equalsIgnoreCase(api)){ // 匹配url
-                    if(info.getMethodsCondition().getMethods().contains(getRequestMethod(requestMethod))){ // 匹配requestMethod
+            for (String pattern : info.getPatternsCondition().getPatterns()) {
+                if (pattern.equalsIgnoreCase(api)) { // 匹配url
+                    if (info.getMethodsCondition().getMethods().contains(getRequestMethod(requestMethod))) { // 匹配requestMethod
                         return true;
                     }
                 }
@@ -70,43 +72,46 @@ public class RequestMappingService implements IRequestMappingService{
         return false;
     }
 
-    public ApiBean registerApi(String index,String api,String requestMethod,String msg){
-        check(!hasMethodOccupied(index),"该序号已经被占用，请先注销api。");
-        check(!hasApiRegistered(api,requestMethod),"该api已经注册过了");
+    @Override
+    public ApiBean registerApi(String index, String api, String requestMethod, String msg) {
+        check(!hasApiRegistered(api, requestMethod), "该api已经注册过了");
 
         RequestMappingHandlerMapping requestMappingHandlerMapping = webApplicationContext.getBean(RequestMappingHandlerMapping.class);
-        Method targetMethod = ReflectionUtils.findMethod(ApiController.class, getHandlerMethodName(index)); // 找到处理该路由的方法
+        // 找到处理该路由的方法
+        Method targetMethod = ReflectionUtils.findMethod(ApiController.class, "commonApiMethod", String.class);
 
         PatternsRequestCondition patternsRequestCondition = new PatternsRequestCondition(api);
         RequestMethodsRequestCondition requestMethodsRequestCondition = new RequestMethodsRequestCondition(getRequestMethod(requestMethod));
 
         RequestMappingInfo mapping_info = new RequestMappingInfo(patternsRequestCondition, requestMethodsRequestCondition, null, null, null, null, null);
-        requestMappingHandlerMapping.registerMapping(mapping_info, "apiController", targetMethod); // 注册映射处理
+        // 注册映射处理
+        requestMappingHandlerMapping.registerMapping(mapping_info, "apiController", targetMethod);
 
         // 保存注册信息到本地
         ApiBean apiInfo = new ApiBean();
         apiInfo.setApi(api);
         apiInfo.setRequestMethod(requestMethod);
         apiInfo.setMsg(msg);
-        Constants.requestMappings.put(index,apiInfo);
+        Constants.requestMappings.put(api + getRequestMethod(requestMethod).toString().toLowerCase(), apiInfo);
 
         return apiInfo;
     }
 
-    public boolean unregisterApi(String index,String api,String requestMethod){
-        check(hasApiRegistered(api,requestMethod),"该api未注册过");
+    @Override
+    public boolean unregisterApi(String index, String api, String requestMethod) {
+        check(hasApiRegistered(api, requestMethod), "该api未注册过");
 
         RequestMappingHandlerMapping requestMappingHandlerMapping = webApplicationContext.getBean(RequestMappingHandlerMapping.class);
-        Method targetMethod = ReflectionUtils.findMethod(ApiController.class, getHandlerMethodName(index));
 
         PatternsRequestCondition patternsRequestCondition = new PatternsRequestCondition(api);
         RequestMethodsRequestCondition requestMethodsRequestCondition = new RequestMethodsRequestCondition(getRequestMethod(requestMethod));
         RequestMappingInfo mapping_info = new RequestMappingInfo(patternsRequestCondition, requestMethodsRequestCondition, null, null, null, null, null);
 
-        requestMappingHandlerMapping.unregisterMapping(mapping_info); // 注销
+        // 注销
+        requestMappingHandlerMapping.unregisterMapping(mapping_info);
 
-        if(Constants.requestMappings.containsKey(index)){
-            Constants.requestMappings.remove(index);
+        if (Constants.requestMappings.containsKey(api + getRequestMethod(requestMethod).toString().toLowerCase())) {
+            Constants.requestMappings.remove(api + getRequestMethod(requestMethod).toString().toLowerCase());
         }
 
         return true;

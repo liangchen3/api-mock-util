@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Data
 public class ApiRegisterRequest {
     /**处理的方法序号*/
-    @NotBlank
+
     private String index;
 
     @NotBlank

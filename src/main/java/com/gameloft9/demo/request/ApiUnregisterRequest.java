@@ -12,7 +12,7 @@ public class ApiUnregisterRequest {
 
     @NotBlank
     private String api;
-    @NotBlank
+
     private String index;
     @NotBlank
     private String requestMethod;
