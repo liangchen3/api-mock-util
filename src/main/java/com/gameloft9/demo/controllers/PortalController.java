@@ -28,7 +28,6 @@ import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 
 
-
 /**
  * 入口
  * Created by gameloft9 on 2018/8/7.
@@ -36,7 +35,7 @@ import javax.validation.Valid;
 @Controller
 @EnableAutoConfiguration
 @Slf4j
-@ComponentScan(basePackages="com.gameloft9.demo")
+@ComponentScan(basePackages = "com.gameloft9.demo")
 public class PortalController {
 
     @Autowired
@@ -44,34 +43,34 @@ public class PortalController {
 
     /**
      * 入口
-     * */
+     */
     @Deprecated
-    @RequestMapping(value="/index")
+    @RequestMapping(value = "/index")
     public String goHome() {
-       return "home";
+        return "home";
     }
 
     /**
      * 注册api
-     * */
+     */
     @RequestMapping(value = "/registerApi.do", method = RequestMethod.POST)
     @ResponseBody
     public IResult registerApi(@Valid ApiRegisterRequest request, BindingResult result) {
-        return new ResultBean<ApiBean>(requestMappingService.registerApi(request.getIndex(),request.getApi(),request.getRequestMethod(),request.getMsg()));
+        return new ResultBean<ApiBean>(requestMappingService.registerApi(request.getIndex(), request.getApi(), request.getRequestMethod(), request.getMsg()));
     }
 
     /**
      * 注销api
-     * */
+     */
     @RequestMapping(value = "/unregisterApi.do", method = RequestMethod.POST)
     @ResponseBody
     public IResult unregisterApi(@Valid ApiUnregisterRequest request, BindingResult result) {
-        return new ResultBean<Boolean>(requestMappingService.unregisterApi(request.getIndex(),request.getApi(),request.getRequestMethod()));
+        return new ResultBean<Boolean>(requestMappingService.unregisterApi(request.getIndex(), request.getApi(), request.getRequestMethod()));
     }
 
     /**
      * 检查接口序号是否已经占用
-     * */
+     */
     @RequestMapping(value = "/getApiInfoByIndex.do", method = RequestMethod.POST)
     @ResponseBody
     public IResult getApiInfoByIndex(String index) {
@@ -93,6 +92,7 @@ public class PortalController {
 
     /**
      * 生成跨域配置
+     *
      * @return
      */
     private CorsConfiguration buildConfig() {
@@ -106,5 +106,6 @@ public class PortalController {
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(PortalController.class, args);
+        log.info("项目配置页面路径：http://localhost:1937/views/home.html");
     }
 }
